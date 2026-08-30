@@ -1,6 +1,6 @@
 # Home Assistant FRITZ!Box Budget
 
-[![HACS Custom Repository](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/M4RKU5-C0D3/HAFC) [![GitHub release](https://img.shields.io/github/v/release/M4RKU5-C0D3/HAFC?style=for-the-badge)](https://github.com/M4RKU5-C0D3/HAFC/releases)
+[![HACS Custom Repository](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/M4RKU5-C0D3/HAFC) [![GitHub release](https://img.shields.io/github/v/release/M4RKU5-C0D3/HAFC?style=for-the-badge)](https://github.com/M4RKU5-C0D3/HAFC/releases) [![Validate](https://img.shields.io/github/actions/workflow/status/M4RKU5-C0D3/HAFC/validate.yml?branch=master&style=for-the-badge&label=Validate)](https://github.com/M4RKU5-C0D3/HAFC/actions/workflows/validate.yml)
 
 Home Assistant Custom Integration **`fritzbox_budget`**: steuert den Internet-Zugang einzelner Geräte einer FRITZ!Box mit einem täglichen Zeitbudget – ähnlich der Kindersicherung einer Nintendo Switch. Ein Config-Entry = eine FRITZ!Box.
 
@@ -25,17 +25,19 @@ Home Assistant Custom Integration **`fritzbox_budget`**: steuert den Internet-Zu
 
 ### Via HACS (empfohlen)
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=M4RKU5-C0D3&repository=HAFC&category=integration)
+
 1. In HACS: **HACS → ⋮ → Benutzerdefinierte Repositorys**
 2. Repository-URL `https://github.com/M4RKU5-C0D3/HAFC` mit Kategorie **Integration** hinzufügen
-3. „FRITZ!Box Budget" herunterladen
+3. Auf **Download** bei „FRITZ!Box Budget" klicken
 4. Home Assistant neu starten
-5. **Einstellungen → Geräte & Dienste → Integration hinzufügen → „FRITZ!Box Budget"** und Zugangsdaten eingeben
+5. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** nach **„FRITZ!Box Budget"** suchen und die Zugangsdaten der FRITZ!Box eingeben
 
 ### Manuell
 
 1. `custom_components/fritzbox_budget/` in `<config>/custom_components/fritzbox_budget/` kopieren
 2. Home Assistant neu starten
-3. Integration über die UI hinzufügen (s. o.)
+3. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** nach **„FRITZ!Box Budget"** suchen und die Zugangsdaten der FRITZ!Box eingeben
 
 ## Einrichtung
 
