@@ -1,72 +1,72 @@
 # Home Assistant FRITZ!Box Budget
 
-[![HACS Custom Repository](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/M4RKU5-C0D3/HAFC) [![GitHub release](https://img.shields.io/github/v/release/M4RKU5-C0D3/HAFC?style=for-the-badge)](https://github.com/M4RKU5-C0D3/HAFC/releases) [![Validate](https://img.shields.io/github/actions/workflow/status/M4RKU5-C0D3/HAFC/validate.yml?branch=master&style=for-the-badge&label=Validate)](https://github.com/M4RKU5-C0D3/HAFC/actions/workflows/validate.yml)
+[![HACS Custom Repository](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/M4RKU5-C0D3/HAFB) [![GitHub release](https://img.shields.io/github/v/release/M4RKU5-C0D3/HAFB?style=for-the-badge)](https://github.com/M4RKU5-C0D3/HAFB/releases) [![Validate](https://img.shields.io/github/actions/workflow/status/M4RKU5-C0D3/HAFB/validate.yml?branch=master&style=for-the-badge&label=Validate)](https://github.com/M4RKU5-C0D3/HAFB/actions/workflows/validate.yml)
 
-Home Assistant Custom Integration **`fritzbox_budget`**: steuert den Internet-Zugang einzelner Geräte einer FRITZ!Box mit einem täglichen Zeitbudget – ähnlich der Kindersicherung einer Nintendo Switch. Ein Config-Entry = eine FRITZ!Box.
+Home Assistant Custom Integration **`fritzbox_budget`**: controls the internet access of individual devices on a FRITZ!Box with a daily time budget – similar to the parental controls of a Nintendo Switch. One config entry = one FRITZ!Box.
 
-## Funktionsumfang
+## Features
 
-- **Verwaltete Geräte** über den Options-Flow auswählen.
-- Pro Gerät ein **`switch`** (Internet ein/aus) über die FRITZ!Box-Gerätesperre (`X_AVM-DE_HostFilter`).
-- Pro Gerät ein **`sensor`** mit der verbleibenden Zeit heute (Budget + Verlängerungen − verbrauchte Zeit).
-- **Tagesbudget** pro Gerät, zurückgesetzt täglich um **03:00 Uhr**.
-- **Verlängerungen** per Service `fritzbox_budget.extend_time` (15 / 30 / 60 Minuten) – auch schon vor Ablauf des Budgets, begrenzt durch ein Tageslimit.
-- **Automatisches Abschalten**, sobald das Budget erschöpft ist.
-- Bei Verbindungs-/Anmeldefehlern bleibt der letzte Datenstand erhalten.
+- **Managed devices** are selected via the options flow.
+- Per device a **`switch`** (internet on/off) using the FRITZ!Box device lock (`X_AVM-DE_HostFilter`).
+- Per device a **`sensor`** showing the remaining time today (budget + extensions − used time).
+- **Daily budget** per device, reset daily at **03:00**.
+- **Extensions** via the service `fritzbox_budget.extend_time` (15 / 30 / 60 minutes) – also before the budget runs out, limited by a daily cap.
+- **Automatic shutdown** once the budget is exhausted.
+- On connection or authentication errors the last known state is kept.
 
-> Die Zeitberechnung („verbrauchte Zeit") basiert auf der Dauer, in der der Internet-Zugang über diese Integration gewährt war. Die FRITZ!Box bietet keine API für die tatsächliche Nutzungszeit pro Gerät – für ein Kindergerät ist diese Näherung in der Regel ausreichend.
+> The time calculation ("used time") is based on how long internet access was granted through this integration. The FRITZ!Box offers no API for the actual usage time per device – for a child's device this approximation is usually sufficient.
 
-## Voraussetzungen
+## Requirements
 
-- FRITZ!Box mit aktiviertem **„Zugriff für Anwendungen" (TR-064)** unter Heimnetz → Netzwerk → Netzwerkeinstellungen → Zugangseinstellungen im Heimnetz (ggf. zusätzlich UPnP aktiviert).
-- Ein FRITZ!Box-Benutzer mit der Berechtigung **FRITZ!Box-Einstellungen** (Empfehlung: ein separater Benutzer anlegen).
+- A FRITZ!Box with **"Access for apps" (TR-064)** enabled under Home Network → Network → Network Settings → Home Network Access Settings (UPnP may also need to be enabled).
+- A FRITZ!Box user with the **FRITZ!Box settings** permission (recommendation: create a separate user).
 
 ## Installation
 
-### Via HACS (empfohlen)
+### Via HACS (recommended)
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=M4RKU5-C0D3&repository=HAFC&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=M4RKU5-C0D3&repository=HAFB&category=integration)
 
-1. In HACS: **HACS → ⋮ → Benutzerdefinierte Repositorys**
-2. Repository-URL `https://github.com/M4RKU5-C0D3/HAFC` mit Kategorie **Integration** hinzufügen
-3. Auf **Download** bei „FRITZ!Box Budget" klicken
-4. Home Assistant neu starten
-5. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** nach **„FRITZ!Box Budget"** suchen und die Zugangsdaten der FRITZ!Box eingeben
+1. In HACS: go to **HACS → ⋮ → Custom repositories**
+2. Add the repository URL `https://github.com/M4RKU5-C0D3/HAFB` with the category **Integration**
+3. Click **Download** on "FRITZ!Box Budget"
+4. Restart Home Assistant
+5. Under **Settings → Devices & Services → Add Integration** search for **"FRITZ!Box Budget"** and enter your FRITZ!Box credentials
 
-### Manuell
+### Manually
 
-1. `custom_components/fritzbox_budget/` in `<config>/custom_components/fritzbox_budget/` kopieren
-2. Home Assistant neu starten
-3. Unter **Einstellungen → Geräte & Dienste → Integration hinzufügen** nach **„FRITZ!Box Budget"** suchen und die Zugangsdaten der FRITZ!Box eingeben
+1. Copy `custom_components/fritzbox_budget/` into `<config>/custom_components/fritzbox_budget/`
+2. Restart Home Assistant
+3. Under **Settings → Devices & Services → Add Integration** search for **"FRITZ!Box Budget"** and enter your FRITZ!Box credentials
 
-## Einrichtung
+## Setup
 
-Nach dem Hinzufügen der FRITZ!Box:
+After adding the FRITZ!Box:
 
-1. **Integration → Optionen** öffnen.
-2. Die zu verwaltenden Geräte auswählen.
-3. Für jedes Gerät **Tagesbudget** (Minuten) und **max. Verlängerung pro Tag** (Minuten) festlegen.
+1. Open **Integration → Options**.
+2. Select the devices you want to manage.
+3. For each device set the **daily budget** (minutes) and the **max. extension per day** (minutes).
 
-## Verlängerungen
+## Extensions
 
-Über den Service `fritzbox_budget.extend_time` gewährst du einem Gerät zusätzliche Zeit:
+Grant a device extra time via the service `fritzbox_budget.extend_time`:
 
 ```yaml
 service: fritzbox_budget.extend_time
 data:
-  device: "AA:BB:CC:DD:EE:FF"   # MAC-Adresse des Geräts
-  minutes: 15                    # 15, 30 oder 60
+  device: "AA:BB:CC:DD:EE:FF"   # device MAC address
+  minutes: 15                    # 15, 30 or 60
 ```
 
-Die Verlängerung ist sofort wirksam und begrenzt durch das konfigurierte Tageslimit. Auch wenn das Gerät durch das Budget bereits gesperrt war, wird es durch die Verlängerung wieder freigeschaltet.
+The extension takes effect immediately and is limited by the configured daily cap. Even if the device was already locked by the budget, the extension unlocks it again.
 
-## Benachrichtigung vor Abschaltung
+## Notification before shutdown
 
-Die Integration sendet keine Benachrichtigungen selbst. Über den Restzeit-Sensor (`sensor.<gerät>_remaining_time_today`) kannst du per Automation eigene Warnungen auslösen, sobald das Budget fast aufgebraucht ist – z. B. ein Numerik-Trigger bei „≤ 30/20/10 Minuten" und ein Versand über Gotify o. ä. an das gewünschte Gerät:
+The integration does not send notifications itself. Using the remaining-time sensor (`sensor.<device>_remaining_time_today`) you can raise your own warnings via automation once the budget is almost used up – e.g. a numeric trigger at "≤ 30/20/10 minutes" and a dispatch via Gotify or similar to the desired device:
 
 ```yaml
 automation:
-  - alias: "Budget Warnung"
+  - alias: "Budget warning"
     trigger:
       - platform: numeric_state
         entity_id: sensor.kind_pc_remaining_time_today
@@ -74,18 +74,18 @@ automation:
     action:
       - service: notify.myservice
         data:
-          message: "Noch 10 Minuten Internet-Zeit übrig!"
+          message: "10 minutes of internet time left!"
 ```
 
-## Datenabfrage
+## Data polling
 
-- Update-Intervall: 15 s, `DataUpdateCoordinator`.
-- Bei Verbindungs- oder Anmeldefehlern bleibt der letzte Datenstand erhalten; Entitäten werden nicht als unverfügbar markiert.
+- Update interval: 15 s, `DataUpdateCoordinator`.
+- On connection or authentication errors the last known state is kept; entities are not marked as unavailable.
 
-## Hinweis
+## Disclaimer
 
-Privates Projekt. Steuert ausschließlich die eigene FRITZ!Box über das lokale TR-064-Interface.
+Personal project. It only controls your own FRITZ!Box via the local TR-064 interface.
 
 ## Vibe coding
 
-Erstellt mit KI-Unterstützung über [opencode](https://opencode.ai) (Modell `big-pickle`), analog zum Vorbild-Projekt [HASH](https://github.com/M4RKU5-C0D3/HASH). Gesamter Code von einem menschlichen Maintainer geprüft und veröffentlicht.
+Created with AI assistance via [opencode](https://opencode.ai) (model `big-pickle`), modeled on the reference project [HASH](https://github.com/M4RKU5-C0D3/HASH). All code was reviewed and released by a human maintainer.
