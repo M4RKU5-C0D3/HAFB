@@ -1,0 +1,72 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "FRITZ!Box Budget",
+        "description": "Enter the credentials of a FRITZ!Box user that has FRITZ!Box Settings permission.",
+        "data": {
+          "host": "Host (IP address or hostname)",
+          "port": "Port",
+          "username": "Username",
+          "password": "Password",
+          "ssl": "Use an SSL certificate"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the FRITZ!Box",
+      "invalid_auth": "Invalid credentials",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This FRITZ!Box is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Managed devices",
+        "description": "Select the devices to control internet access for.",
+        "data": {
+          "devices": "Devices"
+        }
+      },
+      "configure": {
+        "title": "Time budget",
+        "description": "Set the daily budget and the maximum extension for each device.",
+        "data": {
+          "budget": "Daily budget (minutes)",
+          "limit": "Maximum extension per day (minutes)"
+        }
+      }
+    }
+  },
+  "services": {
+    "extend_time": {
+      "name": "Extend time",
+      "description": "Extend the daily time budget of a managed device (15, 30 or 60 minutes).",
+      "fields": {
+        "device": {
+          "name": "Device",
+          "description": "MAC address of the managed device."
+        },
+        "minutes": {
+          "name": "Minutes",
+          "description": "Additional minutes to grant."
+        }
+      }
+    }
+  },
+  "entity": {
+    "switch": {
+      "internet": {
+        "name": "Internet"
+      }
+    },
+    "sensor": {
+      "remaining_time": {
+        "name": "Remaining time today"
+      }
+    }
+  }
+}

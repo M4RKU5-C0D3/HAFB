@@ -1,0 +1,12 @@
+{
+  "domain": "fritzbox_budget",
+  "name": "FRITZ!Box Budget",
+  "codeowners": ["@M4RKU5-C0D3"],
+  "config_flow": true,
+  "documentation": "https://github.com/M4RKU5-C0D3/HAFC",
+  "integration_type": "service",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/M4RKU5-C0D3/HAFC/issues",
+  "requirements": ["fritzconnection"],
+  "version": "0.1.0"
+}

@@ -1,0 +1,72 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "FRITZ!Box Budget",
+        "description": "Gib die Zugangsdaten eines FRITZ!Box-Benutzers ein, der die Berechtigung \"FRITZ!Box-Einstellungen\" besitzt.",
+        "data": {
+          "host": "Host (IP-Adresse oder Hostname)",
+          "port": "Port",
+          "username": "Benutzername",
+          "password": "Passwort",
+          "ssl": "SSL-Zertifikat verwenden"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zum FRITZ!Box fehlgeschlagen",
+      "invalid_auth": "Ungültige Zugangsdaten",
+      "unknown": "Unerwarteter Fehler"
+    },
+    "abort": {
+      "already_configured": "Dieser FRITZ!Box ist bereits konfiguriert"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Verwaltete Geräte",
+        "description": "Wähle die Geräte, deren Internet-Zugang gesteuert werden soll.",
+        "data": {
+          "devices": "Geräte"
+        }
+      },
+      "configure": {
+        "title": "Zeitbudget",
+        "description": "Lege das Tagesbudget und die maximale Verlängerung für jedes Gerät fest.",
+        "data": {
+          "budget": "Tagesbudget (Minuten)",
+          "limit": "Maximale Verlängerung pro Tag (Minuten)"
+        }
+      }
+    }
+  },
+  "services": {
+    "extend_time": {
+      "name": "Zeit verlängern",
+      "description": "Verlängert das Tagesbudget eines verwalteten Geräts (15, 30 oder 60 Minuten).",
+      "fields": {
+        "device": {
+          "name": "Gerät",
+          "description": "MAC-Adresse des verwalteten Geräts."
+        },
+        "minutes": {
+          "name": "Minuten",
+          "description": "Zusätzliche Minuten."
+        }
+      }
+    }
+  },
+  "entity": {
+    "switch": {
+      "internet": {
+        "name": "Internet"
+      }
+    },
+    "sensor": {
+      "remaining_time": {
+        "name": "Restzeit heute"
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+extend_time:
+  name: Extend time
+  description: Extend the daily time budget of a managed device (15, 30 or 60 minutes).
+  fields:
+    device:
+      name: Device
+      description: MAC address of the managed device.
+      required: true
+      example: "AA:BB:CC:DD:EE:FF"
+      selector:
+        text:
+    minutes:
+      name: Minutes
+      description: Additional minutes to grant.
+      required: true
+      selector:
+        select:
+          options:
+            - "15"
+            - "30"
+            - "60"
