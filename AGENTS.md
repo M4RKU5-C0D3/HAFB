@@ -22,7 +22,7 @@ custom_components/fritzbox_budget/
   manifest.json                    Domain, Version, Codeowner, requirement fritzconnection
   strings.json                     UI-Texte (EN, Fallback)
   translations/de.json             UI-Texte (DE)
-  brand/                           icon.png/@2x, logo.png/@2x
+  brand/                           icon.png/@2x, logo.png/@2x (+ dark_*)
 examples/                          (noch leer – geplant für YAML-Beispiele)
 ```
 
