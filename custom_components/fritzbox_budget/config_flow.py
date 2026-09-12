@@ -40,7 +40,9 @@ from .const import (
     ERROR_AUTH_INVALID,
     ERROR_CANNOT_CONNECT,
     ERROR_UNKNOWN,
+    REASON_NOT_READY,
 )
+from .coordinator import FritzBoxBudgetCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -157,12 +159,14 @@ class FritzBoxBudgetOptionsFlow(OptionsFlow):
         self.selected: dict[str, dict[str, int]] = {}
 
     @property
-    def _coordinator(self):
-        """Return the runtime coordinator."""
-        return self.hass.data[DOMAIN][self.config_entry.entry_id]
+    def _coordinator(self) -> FritzBoxBudgetCoordinator | None:
+        """Return the runtime coordinator, or None if not loaded yet."""
+        return self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
 
     def _host_options(self) -> list[dict[str, str]]:
         coordinator = self._coordinator
+        if coordinator is None:
+            return []
         return [
             {"label": f"{host.name} ({host.mac})", "value": host.mac}
             for host in coordinator.hosts.values()
@@ -172,6 +176,9 @@ class FritzBoxBudgetOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Let the user select which devices to manage."""
+        if self._coordinator is None:
+            return self.async_abort(reason=REASON_NOT_READY)
+
         if user_input is not None:
             selected = user_input[CONF_DEVICES]
             devices = {}
@@ -220,6 +227,8 @@ class FritzBoxBudgetOptionsFlow(OptionsFlow):
             return self.async_create_entry(title="", data={CONF_DEVICES: devices})
 
         coordinator = self._coordinator
+        if coordinator is None:
+            return self.async_abort(reason=REASON_NOT_READY)
         schema: dict[vol.Marker, Any] = {}
         for mac in self.selected:
             name = coordinator.hosts.get(mac).name if mac in coordinator.hosts else mac

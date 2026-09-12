@@ -22,6 +22,9 @@
     }
   },
   "options": {
+    "abort": {
+      "not_ready": "Die Integration ist noch nicht bereit, bitte versuche es gleich erneut"
+    },
     "step": {
       "init": {
         "title": "Verwaltete Geräte",

@@ -95,12 +95,12 @@ class FritzBoxClient:
                 pool_maxsize=30,
                 redact_debug_log=True,
             )
+            info = connection.call_action("DeviceInfo:1", "GetInfo")
         except FRITZ_AUTH_EXCEPTIONS as err:
             raise FritzBoxAuthError from err
-        except FritzConnectionException as err:
+        except Exception as err:
             raise FritzBoxConnectionError from err
 
-        info = connection.call_action("DeviceInfo:1", "GetInfo")
         self._connection = connection
         return FritzBoxInfo(
             model=info["NewModelName"],

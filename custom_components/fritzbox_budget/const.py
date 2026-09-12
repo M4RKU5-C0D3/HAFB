@@ -23,6 +23,8 @@ ERROR_AUTH_INVALID = "invalid_auth"
 ERROR_CANNOT_CONNECT = "cannot_connect"
 ERROR_UNKNOWN = "unknown"
 
+REASON_NOT_READY = "not_ready"
+
 # Minutes of the day at which the daily budget counters are reset.
 RESET_HOUR = 3
 RESET_MINUTE = 0
