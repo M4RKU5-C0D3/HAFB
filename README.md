@@ -10,7 +10,7 @@ Home Assistant Custom Integration **`fritzbox_budget`**: controls the internet a
 - Per device a **`switch`** (internet on/off) using the FRITZ!Box device lock (`X_AVM-DE_HostFilter`).
 - Per device a **`sensor`** showing the remaining time today (budget + extensions − used time).
 - **Daily budget** per device, reset daily at **03:00**.
-- **Extensions** via the service `fritzbox_budget.extend_time` (15 / 30 / 60 minutes) – also before the budget runs out, limited by a daily cap.
+- **Extensions**: per device three momentary **`switch`es** for **+15 / +30 / +60 minutes** – also before the budget runs out, limited by a daily cap. The service `fritzbox_budget.extend_time` is available for automations.
 - **Automatic shutdown** once the budget is exhausted.
 - On connection or authentication errors the last known state is kept.
 
@@ -49,7 +49,13 @@ After adding the FRITZ!Box:
 
 ## Extensions
 
-Grant a device extra time via the service `fritzbox_budget.extend_time`:
+**One tap:** each managed device provides three momentary switches that grant an extension immediately (they switch back to "off" on their own); once the daily extension cap is reached they become unavailable:
+
+- `switch.<device>_verlaengerung_15_minuten`
+- `switch.<device>_verlaengerung_30_minuten`
+- `switch.<device>_verlaengerung_60_minuten`
+
+**Via service:** grant a device extra time with `fritzbox_budget.extend_time`:
 
 ```yaml
 service: fritzbox_budget.extend_time
@@ -62,14 +68,14 @@ The extension takes effect immediately and is limited by the configured daily ca
 
 ## Notification before shutdown
 
-The integration does not send notifications itself. Using the remaining-time sensor (`sensor.<device>_remaining_time_today`) you can raise your own warnings via automation once the budget is almost used up – e.g. a numeric trigger at "≤ 30/20/10 minutes" and a dispatch via Gotify or similar to the desired device:
+The integration does not send notifications itself. Using the remaining-time sensor (`sensor.<device>_restzeit_heute` with a German UI, e.g. `sensor.violet_restzeit_heute`; English UI: `sensor.<device>_remaining_time_today`) you can raise your own warnings via automation once the budget is almost used up – e.g. a numeric trigger at "≤ 30/20/10 minutes" and a dispatch via Gotify or similar to the desired device:
 
 ```yaml
 automation:
   - alias: "Budget warning"
     trigger:
       - platform: numeric_state
-        entity_id: sensor.kind_pc_remaining_time_today
+        entity_id: sensor.violet_restzeit_heute
         below: 10
     action:
       - service: notify.myservice
