@@ -12,8 +12,9 @@ from dataclasses import dataclass
 
 from fritzconnection import FritzConnection
 from fritzconnection.core.exceptions import (
-    FritzAuthenticationError,
+    FritzAuthorizationError,
     FritzConnectionException,
+    FritzSecurityError,
 )
 from fritzconnection.lib.fritzhosts import FritzHosts
 
@@ -39,6 +40,9 @@ class FritzBoxInfo:
     def __init__(self, model: str, serial: str) -> None:
         self.model = model
         self.serial = serial
+
+
+FRITZ_AUTH_EXCEPTIONS = (FritzAuthorizationError, FritzSecurityError)
 
 
 @dataclass
@@ -91,7 +95,7 @@ class FritzBoxClient:
                 pool_maxsize=30,
                 redact_debug_log=True,
             )
-        except FritzAuthenticationError as err:
+        except FRITZ_AUTH_EXCEPTIONS as err:
             raise FritzBoxAuthError from err
         except FritzConnectionException as err:
             raise FritzBoxConnectionError from err
@@ -117,7 +121,7 @@ class FritzBoxClient:
         try:
             fh = FritzHosts(fc=self._get_connection())
             entries = fh.get_hosts_info()
-        except FritzAuthenticationError as err:
+        except FRITZ_AUTH_EXCEPTIONS as err:
             raise FritzBoxAuthError from err
         except FritzConnectionException as err:
             raise FritzBoxConnectionError from err
@@ -149,7 +153,7 @@ class FritzBoxClient:
             result = self._get_connection().call_action(
                 "X_AVM-DE_HostFilter:1", "GetWANAccessByIP", NewIPv4Address=ip
             )
-        except (FritzAuthenticationError, FritzConnectionException):
+        except FritzConnectionException:
             return None
         wan_access = result.get("NewWANAccess")
         if wan_access == "granted":
@@ -173,6 +177,6 @@ class FritzBoxClient:
                 NewIPv4Address=ip,
                 NewDisallow=not enabled,
             )
-        except (FritzAuthenticationError, FritzConnectionException):
+        except FritzConnectionException:
             return False
         return True
