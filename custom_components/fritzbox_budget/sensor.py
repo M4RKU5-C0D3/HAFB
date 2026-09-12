@@ -46,7 +46,12 @@ class BudgetRemainingSensor(
         super().__init__(coordinator)
         self._mac = mac
         self._attr_unique_id = f"{entry_id}_{mac}_remaining_time"
-        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, entry_id)})
+        host = coordinator.hosts.get(mac)
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, mac)},
+            name=host.name if host else mac,
+            manufacturer="AVM",
+        )
 
     @property
     def device_state(self) -> DeviceState:

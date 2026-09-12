@@ -40,8 +40,11 @@ class FritzBoxWanSwitch(
         super().__init__(coordinator)
         self._mac = mac
         self._attr_unique_id = f"{entry_id}_{mac}_internet"
+        host = coordinator.hosts.get(mac)
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry_id)},
+            identifiers={(DOMAIN, mac)},
+            name=host.name if host else mac,
+            manufacturer="AVM",
         )
 
     @property
