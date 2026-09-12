@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import RestoreSensor
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.restore_state import async_get_last_state
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_DEVICES, DOMAIN
@@ -32,7 +31,9 @@ async def async_setup_entry(
     )
 
 
-class BudgetRemainingSensor(CoordinatorEntity[FritzBoxBudgetCoordinator], SensorEntity):
+class BudgetRemainingSensor(
+    CoordinatorEntity[FritzBoxBudgetCoordinator], RestoreSensor
+):
     """Remaining time budget (minutes) for a device."""
 
     _attr_has_entity_name = True
@@ -72,7 +73,7 @@ class BudgetRemainingSensor(CoordinatorEntity[FritzBoxBudgetCoordinator], Sensor
     async def async_added_to_hass(self) -> None:
         """Restore the previously persisted budget counters."""
         await super().async_added_to_hass()
-        last_state = await async_get_last_state(self.hass, self.entity_id)
+        last_state = await self.async_get_last_state()
         if last_state is None or last_state.attributes is None:
             return
         state = DeviceState(mac=self._mac)

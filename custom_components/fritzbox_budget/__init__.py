@@ -9,13 +9,17 @@ from __future__ import annotations
 import logging
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigEntryAuthFailed,
+    ConfigEntryNotReady,
+)
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
-from .api import FritzBoxClient
+from .api import FritzBoxAuthError, FritzBoxClient, FritzBoxConnectionError
 from .const import (
     CONF_HOST,
     CONF_PASSWORD,
@@ -81,6 +85,14 @@ async def async_setup_entry(
         password=entry.data[CONF_PASSWORD],
         use_tls=entry.data.get(CONF_SSL, False),
     )
+    try:
+        await hass.async_add_executor_job(client.connect)
+    except FritzBoxAuthError as err:
+        raise ConfigEntryAuthFailed(
+            "Authentication with the FRITZ!Box failed"
+        ) from err
+    except FritzBoxConnectionError as err:
+        raise ConfigEntryNotReady from err
     coordinator = FritzBoxBudgetCoordinator(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
