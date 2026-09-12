@@ -17,6 +17,9 @@ DEFAULT_SSL = False
 DEFAULT_BUDGET = 120
 DEFAULT_EXTENSION_LIMIT = 60
 
+# Allowed extension durations in minutes (one momentary switch each).
+EXTENSION_MINUTES = (15, 30, 60)
+
 DOMAIN = "fritzbox_budget"
 
 ERROR_AUTH_INVALID = "invalid_auth"

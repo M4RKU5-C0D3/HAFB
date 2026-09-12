@@ -63,6 +63,15 @@
     "switch": {
       "internet": {
         "name": "Internet"
+      },
+      "extend_15": {
+        "name": "Extend 15 minutes"
+      },
+      "extend_30": {
+        "name": "Extend 30 minutes"
+      },
+      "extend_60": {
+        "name": "Extend 60 minutes"
       }
     },
     "sensor": {
