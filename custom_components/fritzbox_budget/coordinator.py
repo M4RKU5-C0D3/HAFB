@@ -122,7 +122,7 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             else:
                 state.online = False
 
-            if state.online and state.ip:
+            if state.ip:
                 state.wan_access = await self.hass.async_add_executor_job(
                     self.client.get_wan_access, state.ip
                 )
