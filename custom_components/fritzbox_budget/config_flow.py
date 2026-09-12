@@ -186,11 +186,18 @@ class FritzBoxBudgetOptionsFlow(OptionsFlow):
             self.selected = devices
             return await self.async_step_configure()
 
+        existing = self.config_entry.options.get(CONF_DEVICES, {})
+        host_options = list(self._host_options())
+        known = {option["value"] for option in host_options}
+        for mac in existing:
+            if mac not in known:
+                host_options.append({"label": mac, "value": mac})
+
         schema = vol.Schema(
             {
-                vol.Required(CONF_DEVICES): SelectSelector(
+                vol.Required(CONF_DEVICES, default=list(existing)): SelectSelector(
                     SelectSelectorConfig(
-                        options=self._host_options(),
+                        options=host_options,
                         multiple=True,
                         mode=SelectSelectorMode.DROPDOWN,
                     )

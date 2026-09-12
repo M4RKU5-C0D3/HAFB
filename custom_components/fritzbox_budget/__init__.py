@@ -99,6 +99,8 @@ async def async_setup_entry(
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
