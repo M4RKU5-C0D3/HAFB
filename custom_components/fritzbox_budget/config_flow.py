@@ -13,6 +13,7 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
+from homeassistant.core import callback
 from homeassistant.helpers.selector import (
     BooleanSelector,
     BooleanSelectorConfig,
@@ -139,21 +140,26 @@ class FritzBoxBudgetConfigFlow(ConfigFlow, domain=DOMAIN):
             },
         )
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> FritzBoxBudgetOptionsFlow:
+        """Get the options flow for this handler."""
+        return FritzBoxBudgetOptionsFlow()
+
 
 class FritzBoxBudgetOptionsFlow(OptionsFlow):
     """Options flow to select managed devices and their budgets."""
 
     VERSION = 1
 
-    def __init__(self, entry: ConfigEntry) -> None:
+    def __init__(self) -> None:
         """Initialize the options flow."""
-        self._entry = entry
         self.selected: dict[str, dict[str, int]] = {}
 
     @property
     def _coordinator(self):
         """Return the runtime coordinator."""
-        return self.hass.data[DOMAIN][self._entry.entry_id]
+        return self.hass.data[DOMAIN][self.config_entry.entry_id]
 
     def _host_options(self) -> list[dict[str, str]]:
         coordinator = self._coordinator
@@ -169,7 +175,7 @@ class FritzBoxBudgetOptionsFlow(OptionsFlow):
         if user_input is not None:
             selected = user_input[CONF_DEVICES]
             devices = {}
-            existing = self._entry.options.get(CONF_DEVICES, {})
+            existing = self.config_entry.options.get(CONF_DEVICES, {})
             for mac in selected:
                 devices[mac] = {
                     CONF_BUDGET: existing.get(mac, {}).get(CONF_BUDGET, DEFAULT_BUDGET),

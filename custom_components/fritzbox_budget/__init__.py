@@ -16,7 +16,6 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
 from .api import FritzBoxClient
-from .config_flow import FritzBoxBudgetOptionsFlow
 from .const import (
     CONF_HOST,
     CONF_PASSWORD,
@@ -51,7 +50,6 @@ _EXTEND_TIME_SCHEMA = vol.Schema(
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the FRITZ!Box Budget integration."""
-    hass.config_entries.async_register_options_flow(DOMAIN, FritzBoxBudgetOptionsFlow)
     hass.data.setdefault(DOMAIN, {})
 
     async def extend_time(call: ServiceCall) -> None:
