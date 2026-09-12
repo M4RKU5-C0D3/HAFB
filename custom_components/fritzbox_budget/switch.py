@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -25,7 +26,9 @@ async def async_setup_entry(
     )
 
 
-class FritzBoxWanSwitch(CoordinatorEntity[FritzBoxBudgetCoordinator]):
+class FritzBoxWanSwitch(
+    CoordinatorEntity[FritzBoxBudgetCoordinator], SwitchEntity
+):
     """Switch controlling internet access for a device."""
 
     _attr_has_entity_name = True

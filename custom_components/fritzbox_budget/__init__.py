@@ -6,6 +6,8 @@ budget computed in Home Assistant. One config entry equals one FRITZ!Box.
 
 from __future__ import annotations
 
+import logging
+
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -24,6 +26,8 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import FritzBoxBudgetCoordinator
+
+_LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SWITCH, Platform.SENSOR]
 
@@ -48,6 +52,23 @@ _EXTEND_TIME_SCHEMA = vol.Schema(
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the FRITZ!Box Budget integration."""
     hass.config_entries.async_register_options_flow(DOMAIN, FritzBoxBudgetOptionsFlow)
+    hass.data.setdefault(DOMAIN, {})
+
+    async def extend_time(call: ServiceCall) -> None:
+        coordinator = _find_coordinator(hass, call.data[SERVICE_ATTR_DEVICE])
+        if coordinator is None:
+            _LOGGER.warning(
+                "No managed device with MAC %s found",
+                call.data[SERVICE_ATTR_DEVICE],
+            )
+            return
+        await coordinator.async_extend_time(
+            call.data[SERVICE_ATTR_DEVICE], call.data[SERVICE_ATTR_MINUTES]
+        )
+
+    hass.services.async_register(
+        DOMAIN, SERVICE_EXTEND_TIME, extend_time, schema=_EXTEND_TIME_SCHEMA
+    )
     return True
 
 
@@ -69,23 +90,17 @@ async def async_setup_entry(
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    await _async_register_services(hass, coordinator)
     return True
 
 
-async def _async_register_services(
-    hass: HomeAssistant, coordinator: FritzBoxBudgetCoordinator
-) -> None:
-    """Register the extend_time service for a config entry."""
-
-    async def extend_time(call: ServiceCall) -> None:
-        mac = call.data[SERVICE_ATTR_DEVICE]
-        minutes = call.data[SERVICE_ATTR_MINUTES]
-        await coordinator.async_extend_time(mac, minutes)
-
-    hass.services.async_register(
-        DOMAIN, SERVICE_EXTEND_TIME, extend_time, schema=_EXTEND_TIME_SCHEMA
-    )
+def _find_coordinator(
+    hass: HomeAssistant, mac: str
+) -> FritzBoxBudgetCoordinator | None:
+    """Return the coordinator that manages the given device MAC."""
+    for coordinator in hass.data.get(DOMAIN, {}).values():
+        if mac in coordinator.data:
+            return coordinator
+    return None
 
 
 async def async_unload_entry(
