@@ -6,7 +6,6 @@
         "description": "Enter the credentials of a FRITZ!Box user that has FRITZ!Box Settings permission.",
         "data": {
           "host": "Host (IP address or hostname)",
-          "port": "Port",
           "username": "Username",
           "password": "Password",
           "ssl": "Use an SSL certificate"

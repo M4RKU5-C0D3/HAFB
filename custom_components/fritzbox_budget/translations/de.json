@@ -6,10 +6,9 @@
         "description": "Gib die Zugangsdaten eines FRITZ!Box-Benutzers ein, der die Berechtigung \"FRITZ!Box-Einstellungen\" besitzt.",
         "data": {
           "host": "Host (IP-Adresse oder Hostname)",
-          "port": "Port",
           "username": "Benutzername",
           "password": "Passwort",
-          "ssl": "SSL-Zertifikat verwenden"
+          "ssl": "SSL verwenden"
         }
       }
     },

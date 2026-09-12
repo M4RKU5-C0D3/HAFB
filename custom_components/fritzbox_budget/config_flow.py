@@ -91,19 +91,19 @@ class FritzBoxBudgetConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] | None = None,
     ) -> ConfigFlowResult:
         user_input = user_input or {}
+        use_tls = user_input.get(CONF_SSL, False)
         schema = vol.Schema(
             {
                 vol.Required(
                     CONF_HOST, default=user_input.get(CONF_HOST, DEFAULT_HOST)
                 ): str,
-                vol.Optional(CONF_PORT): vol.Coerce(int),
                 vol.Required(
                     CONF_USERNAME, default=user_input.get(CONF_USERNAME, "")
                 ): str,
                 vol.Required(CONF_PASSWORD): str,
-                vol.Optional(
-                    CONF_SSL, default=user_input.get(CONF_SSL, False)
-                ): BooleanSelector(BooleanSelectorConfig()),
+                vol.Optional(CONF_SSL, default=use_tls): BooleanSelector(
+                    BooleanSelectorConfig()
+                ),
             }
         )
         return self.async_show_form(
