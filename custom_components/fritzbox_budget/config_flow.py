@@ -31,10 +31,8 @@ from .api import (
 from .const import (
     CONF_BUDGET,
     CONF_DEVICES,
-    CONF_EXTENSION_LIMIT,
     CONF_SSL,
     DEFAULT_BUDGET,
-    DEFAULT_EXTENSION_LIMIT,
     DEFAULT_HOST,
     DOMAIN,
     ERROR_AUTH_INVALID,
@@ -186,9 +184,6 @@ class FritzBoxBudgetOptionsFlow(OptionsFlow):
             for mac in selected:
                 devices[mac] = {
                     CONF_BUDGET: existing.get(mac, {}).get(CONF_BUDGET, DEFAULT_BUDGET),
-                    CONF_EXTENSION_LIMIT: existing.get(mac, {}).get(
-                        CONF_EXTENSION_LIMIT, DEFAULT_EXTENSION_LIMIT
-                    ),
                 }
             self.selected = devices
             return await self.async_step_configure()
@@ -216,14 +211,11 @@ class FritzBoxBudgetOptionsFlow(OptionsFlow):
     async def async_step_configure(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Configure budget and extension limit for each selected device."""
+        """Configure the budget for each selected device."""
         if user_input is not None:
             devices = {}
             for mac in self.selected:
-                devices[mac] = {
-                    CONF_BUDGET: user_input[f"budget_{mac}"],
-                    CONF_EXTENSION_LIMIT: user_input[f"limit_{mac}"],
-                }
+                devices[mac] = {CONF_BUDGET: user_input[f"budget_{mac}"]}
             return self.async_create_entry(title="", data={CONF_DEVICES: devices})
 
         coordinator = self._coordinator
@@ -237,13 +229,6 @@ class FritzBoxBudgetOptionsFlow(OptionsFlow):
                 vol.Required(
                     f"budget_{mac}",
                     default=selected[CONF_BUDGET],
-                    description={"suffix": name},
-                )
-            ] = vol.Coerce(int)
-            schema[
-                vol.Required(
-                    f"limit_{mac}",
-                    default=selected[CONF_EXTENSION_LIMIT],
                     description={"suffix": name},
                 )
             ] = vol.Coerce(int)

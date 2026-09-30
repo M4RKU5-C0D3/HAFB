@@ -1,6 +1,6 @@
 extend_time:
   name: Extend time
-  description: Extend the daily time budget of a managed device (15, 30 or 60 minutes).
+  description: Grant a managed device extra minutes (15, 30 or 60). If the budget is exhausted, internet access is re-enabled and the remaining time is set to the granted minutes.
   fields:
     device:
       name: Device

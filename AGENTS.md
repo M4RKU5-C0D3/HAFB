@@ -42,9 +42,9 @@ examples/                          (noch leer – geplant für YAML-Beispiele)
   - `DisallowWANAccessByIP(NewIPv4Address, NewDisallow)`
 - Geräte werden **per IP** (nicht MAC) identifiziert; offline Geräte ohne IP sind nicht steuerbar (letzten Stand behalten).
 - `used_today` zählt nur, solange `wan_access` ON (`granted`) **und** das Gerät laut `NewActive` tatsächlich Datenverkehr hat; Standby/„Ungenutzte Verbindungen" und die Zeit von 03:00 bis zur ersten Nutzung laufen nicht ins Kontingent.
-- Zwei Töpfe je Gerät: **Budgets** (`budget`) und **Verlängerungen** (`granted_extension` bis `extension_limit`). Gesperrt wenn `used_today >= budget + granted_extension`.
+- Zwei Töpfe je Gerät: **Budgets** (`budget`) und **Verlängerungen** (`granted_extension`, wächst ohne Tages-Cap). Gesperrt wenn `used_today >= budget + granted_extension`. Verlängerung mit Restzeit: `granted_extension += minutes`; ohne Restzeit: Internet freischalten und `granted_extension = minutes + used_today - budget` (Restzeit exakt = gewählte Minuten).
 - **Zähler-Reset um 03:00 Uhr** (`RESET_HOUR`): vor 03:00 zählt die Zeit noch zum Vortag; gesperrte Geräte werden beim Reset automatisch freigeschaltet.
-- Options-Flow speichert in `entry.options[CONF_DEVICES] = {mac: {budget, extension_limit}}`; Änderungen lösen `async_reload_entry` aus.
+- Options-Flow speichert in `entry.options[CONF_DEVICES] = {mac: {budget}}`; Änderungen lösen `async_reload_entry` aus.
 - Service `extend_time` (device=MAC, minutes 15/30/60) ruft `coordinator.async_extend_time`.
 - Bei Verbindungs-/Auth-Fehlern: `_async_update_data` gibt den letzten Datenstand zurück (kein `UpdateFailed`), damit Entitäten verfügbar bleiben.
 - Verbindungsdaten sind TR-064-basiert; im Router müssen „Zugriff für Anwendungen" (TR-064) und ggf. UPnP aktiviert sein. `unique_id` = Seriennummer (`DeviceInfo:1/GetInfo/NewSerialNumber`); Enttitel = `NewModelName`.

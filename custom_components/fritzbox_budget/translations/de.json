@@ -35,10 +35,9 @@
       },
       "configure": {
         "title": "Zeitbudget",
-        "description": "Lege das Tagesbudget und die maximale Verlängerung für jedes Gerät fest.",
+        "description": "Lege das Tagesbudget für jedes Gerät fest.",
         "data": {
-          "budget": "Tagesbudget (Minuten)",
-          "limit": "Maximale Verlängerung pro Tag (Minuten)"
+          "budget": "Tagesbudget (Minuten)"
         }
       }
     }
@@ -46,7 +45,7 @@
   "services": {
     "extend_time": {
       "name": "Zeit verlängern",
-      "description": "Verlängert das Tagesbudget eines verwalteten Geräts (15, 30 oder 60 Minuten).",
+      "description": "Gewährt einem verwalteten Gerät zusätzliche Minuten (15, 30 oder 60). Ist das Budget aufgebraucht, wird der Internet-Zugang wieder freigeschaltet und die Restzeit auf die gewährten Minuten gesetzt.",
       "fields": {
         "device": {
           "name": "Gerät",

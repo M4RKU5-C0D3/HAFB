@@ -35,10 +35,9 @@
       },
       "configure": {
         "title": "Time budget",
-        "description": "Set the daily budget and the maximum extension for each device.",
+        "description": "Set the daily budget for each device.",
         "data": {
-          "budget": "Daily budget (minutes)",
-          "limit": "Maximum extension per day (minutes)"
+          "budget": "Daily budget (minutes)"
         }
       }
     }
@@ -46,7 +45,7 @@
   "services": {
     "extend_time": {
       "name": "Extend time",
-      "description": "Extend the daily time budget of a managed device (15, 30 or 60 minutes).",
+      "description": "Grant a managed device extra minutes (15, 30 or 60). If the budget is exhausted, internet access is re-enabled and the remaining time is set to the granted minutes.",
       "fields": {
         "device": {
           "name": "Device",

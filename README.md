@@ -10,7 +10,7 @@ Home Assistant Custom Integration **`fritzbox_budget`**: controls the internet a
 - Per device a **`switch`** (internet on/off) using the FRITZ!Box device lock (`X_AVM-DE_HostFilter`).
 - Per device a **`sensor`** showing the remaining time today (budget + extensions − used time).
 - **Daily budget** per device, reset daily at **03:00**.
-- **Extensions**: per device three momentary **`switch`es** for **+15 / +30 / +60 minutes** – also before the budget runs out, limited by a daily cap. The service `fritzbox_budget.extend_time` is available for automations.
+- **Extensions**: per device three momentary **`switch`es** for **+15 / +30 / +60 minutes**. If time remains, the shutdown is simply delayed; if the budget is exhausted, internet access is re-enabled and the remaining time is set to the granted minutes. The service `fritzbox_budget.extend_time` is available for automations.
 - **Automatic shutdown** once the budget is exhausted.
 - On connection or authentication errors the last known state is kept.
 
@@ -45,11 +45,11 @@ After adding the FRITZ!Box:
 
 1. Open **Integration → Options**.
 2. Select the devices you want to manage.
-3. For each device set the **daily budget** (minutes) and the **max. extension per day** (minutes).
+3. For each device set the **daily budget** (minutes).
 
 ## Extensions
 
-**One tap:** each managed device provides three momentary switches that grant an extension immediately (they switch back to "off" on their own); once the daily extension cap is reached they become unavailable:
+**One tap:** each managed device provides three momentary switches that grant an extension immediately (they switch back to "off" on their own) – they are always available:
 
 - `switch.<device>_verlaengerung_15_minuten`
 - `switch.<device>_verlaengerung_30_minuten`
@@ -64,7 +64,7 @@ data:
   minutes: 15                    # 15, 30 or 60
 ```
 
-The extension takes effect immediately and is limited by the configured daily cap. Even if the device was already locked by the budget, the extension unlocks it again.
+Behavior: if the budget is not yet exhausted, the granted minutes extend the remaining time (delaying the shutdown). If the device was already locked by the budget, internet access is re-enabled and the remaining time is set to the granted minutes. Extensions reset daily together with the budget at 03:00.
 
 ## Notification before shutdown
 

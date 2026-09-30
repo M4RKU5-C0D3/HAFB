@@ -14,9 +14,7 @@ from .api import FritzBoxClient, Host
 from .const import (
     CONF_BUDGET,
     CONF_DEVICES,
-    CONF_EXTENSION_LIMIT,
     DEFAULT_BUDGET,
-    DEFAULT_EXTENSION_LIMIT,
     DOMAIN,
     RESET_HOUR,
 )
@@ -37,7 +35,6 @@ class DeviceState:
     wan_access: bool | None = None
 
     budget: int = DEFAULT_BUDGET
-    extension_limit: int = DEFAULT_EXTENSION_LIMIT
     granted_extension: int = 0
     used_today: float = 0.0
     date: str = field(
@@ -72,29 +69,22 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         self.hosts: dict[str, Host] = {}
         self.data = {}
 
-    def _device_config(self, mac: str) -> tuple[int, int]:
-        """Return (budget, extension_limit) for a configured device."""
+    def _device_config(self, mac: str) -> int:
+        """Return the configured daily budget for a device."""
         devices = self.entry.options.get(CONF_DEVICES, {})
         cfg = devices.get(mac, {})
-        return (
-            int(cfg.get(CONF_BUDGET, DEFAULT_BUDGET)),
-            int(cfg.get(CONF_EXTENSION_LIMIT, DEFAULT_EXTENSION_LIMIT)),
-        )
+        return int(cfg.get(CONF_BUDGET, DEFAULT_BUDGET))
 
     def load_state(self, mac: str, state: DeviceState) -> None:
         """Restore a previously persisted budget state for a device."""
-        budget, limit = self._device_config(mac)
-        state.budget = budget
-        state.extension_limit = limit
+        state.budget = self._device_config(mac)
         self.data[mac] = state
 
     def restore_or_create(self, mac: str, name: str = "") -> DeviceState:
         """Return an existing stored state or create a fresh one."""
         if mac not in self.data:
-            budget, limit = self._device_config(mac)
-            self.data[mac] = DeviceState(
-                mac=mac, name=name, budget=budget, extension_limit=limit
-            )
+            self.data[mac] = DeviceState(mac=mac, name=name)
+            self.data[mac].budget = self._device_config(mac)
         return self.data[mac]
 
     async def _async_update_data(self) -> dict[str, DeviceState]:
@@ -182,19 +172,25 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             await self.async_request_refresh()
 
     async def async_extend_time(self, mac: str, minutes: int) -> bool:
-        """Grant extra minutes to a device, honoring the daily limit."""
+        """Grant extra minutes to a device.
+
+        If time remains, the granted minutes are simply added (delaying the
+        shutdown). If the budget is exhausted, internet access is re-enabled
+        and the remaining time is set to the requested minutes.
+        """
         state = self.data.get(mac)
         if state is None:
             return False
-        available = max(0, state.extension_limit - state.granted_extension)
-        if available == 0:
-            return False
-        grant = min(minutes, available)
-        state.granted_extension += grant
-        state.lock_applied = False
-        if state.ip and (state.wan_access is False or state.remaining <= 0):
-            await self.hass.async_add_executor_job(
-                self.client.set_wan_access, state.ip, True
+        if state.remaining > 0:
+            state.granted_extension += minutes
+        else:
+            state.granted_extension = max(
+                0, minutes + state.used_today - state.budget
             )
+            if state.ip:
+                await self.hass.async_add_executor_job(
+                    self.client.set_wan_access, state.ip, True
+                )
+        state.lock_applied = False
         await self.async_request_refresh()
         return True

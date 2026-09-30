@@ -103,10 +103,7 @@ class ExtensionSwitch(CoordinatorEntity[FritzBoxBudgetCoordinator], SwitchEntity
 
     @property
     def available(self) -> bool:
-        state = self.coordinator.data.get(self._mac)
-        if state is None:
-            return False
-        return state.granted_extension < state.extension_limit
+        return self._mac in self.coordinator.data
 
     async def async_turn_on(self, **kwargs) -> None:
         await self.coordinator.async_extend_time(self._mac, self._minutes)

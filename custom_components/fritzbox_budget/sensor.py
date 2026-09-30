@@ -15,7 +15,6 @@ from .coordinator import DeviceState, FritzBoxBudgetCoordinator
 ATTR_USED_TODAY = "used_today"
 ATTR_BUDGET = "budget"
 ATTR_GRANTED_EXTENSION = "granted_extension"
-ATTR_EXTENSION_LIMIT = "extension_limit"
 ATTR_DATE = "date"
 
 
@@ -73,7 +72,6 @@ class BudgetRemainingSensor(
             ATTR_USED_TODAY: round(state.used_today, 1),
             ATTR_BUDGET: state.budget,
             ATTR_GRANTED_EXTENSION: state.granted_extension,
-            ATTR_EXTENSION_LIMIT: state.extension_limit,
             ATTR_DATE: state.date,
         }
 
@@ -91,9 +89,6 @@ class BudgetRemainingSensor(
             last_state.attributes.get(ATTR_GRANTED_EXTENSION, 0) or 0
         )
         state.budget = int(last_state.attributes.get(ATTR_BUDGET, 120) or 120)
-        state.extension_limit = int(
-            last_state.attributes.get(ATTR_EXTENSION_LIMIT, 60) or 60
-        )
         if last_state.attributes.get(ATTR_DATE):
             state.date = str(last_state.attributes[ATTR_DATE])
         self.coordinator.load_state(self._mac, state)

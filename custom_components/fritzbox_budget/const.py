@@ -8,14 +8,12 @@ CONF_PASSWORD = "password"
 
 CONF_DEVICES = "devices"
 CONF_BUDGET = "budget"
-CONF_EXTENSION_LIMIT = "extension_limit"
 
 DEFAULT_HOST = "fritz.box"
 DEFAULT_HTTP_PORT = 49000
 DEFAULT_HTTPS_PORT = 49443
 DEFAULT_SSL = False
 DEFAULT_BUDGET = 120
-DEFAULT_EXTENSION_LIMIT = 60
 
 # Allowed extension durations in minutes (one momentary switch each).
 EXTENSION_MINUTES = (15, 30, 60)
