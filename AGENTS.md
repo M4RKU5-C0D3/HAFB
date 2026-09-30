@@ -41,7 +41,7 @@ examples/                          (noch leer – geplant für YAML-Beispiele)
   - `GetWANAccessByIP(NewIPv4Address)` → `NewWANAccess` (`granted`/`denied`/`error`)
   - `DisallowWANAccessByIP(NewIPv4Address, NewDisallow)`
 - Geräte werden **per IP** (nicht MAC) identifiziert; offline Geräte ohne IP sind nicht steuerbar (letzten Stand behalten).
-- `used_today` zählt nur, solange `wan_access` ON (`granted`); Basis ist die Switch-ON-Zeit (Näherung).
+- `used_today` zählt nur, solange `wan_access` ON (`granted`) **und** das Gerät laut `NewActive` tatsächlich Datenverkehr hat; Standby/„Ungenutzte Verbindungen" und die Zeit von 03:00 bis zur ersten Nutzung laufen nicht ins Kontingent.
 - Zwei Töpfe je Gerät: **Budgets** (`budget`) und **Verlängerungen** (`granted_extension` bis `extension_limit`). Gesperrt wenn `used_today >= budget + granted_extension`.
 - **Zähler-Reset um 03:00 Uhr** (`RESET_HOUR`): vor 03:00 zählt die Zeit noch zum Vortag; gesperrte Geräte werden beim Reset automatisch freigeschaltet.
 - Options-Flow speichert in `entry.options[CONF_DEVICES] = {mac: {budget, extension_limit}}`; Änderungen lösen `async_reload_entry` aus.

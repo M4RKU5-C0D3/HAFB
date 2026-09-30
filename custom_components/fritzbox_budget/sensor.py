@@ -16,6 +16,7 @@ ATTR_USED_TODAY = "used_today"
 ATTR_BUDGET = "budget"
 ATTR_GRANTED_EXTENSION = "granted_extension"
 ATTR_EXTENSION_LIMIT = "extension_limit"
+ATTR_DATE = "date"
 
 
 async def async_setup_entry(
@@ -66,13 +67,14 @@ class BudgetRemainingSensor(
         return self._mac in self.coordinator.data
 
     @property
-    def extra_state_attributes(self) -> dict[str, int | float]:
+    def extra_state_attributes(self) -> dict[str, int | float | str]:
         state = self.device_state
         return {
             ATTR_USED_TODAY: round(state.used_today, 1),
             ATTR_BUDGET: state.budget,
             ATTR_GRANTED_EXTENSION: state.granted_extension,
             ATTR_EXTENSION_LIMIT: state.extension_limit,
+            ATTR_DATE: state.date,
         }
 
     async def async_added_to_hass(self) -> None:
@@ -92,4 +94,6 @@ class BudgetRemainingSensor(
         state.extension_limit = int(
             last_state.attributes.get(ATTR_EXTENSION_LIMIT, 60) or 60
         )
+        if last_state.attributes.get(ATTR_DATE):
+            state.date = str(last_state.attributes[ATTR_DATE])
         self.coordinator.load_state(self._mac, state)

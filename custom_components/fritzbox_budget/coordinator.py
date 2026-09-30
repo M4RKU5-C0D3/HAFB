@@ -154,7 +154,7 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                 state.lock_applied = False
             return
 
-        if state.wan_access:
+        if state.wan_access and state.online:
             elapsed_minutes = (now - state.last_eval).total_seconds() / 60.0
             if elapsed_minutes > 0:
                 state.used_today += elapsed_minutes

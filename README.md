@@ -14,7 +14,7 @@ Home Assistant Custom Integration **`fritzbox_budget`**: controls the internet a
 - **Automatic shutdown** once the budget is exhausted.
 - On connection or authentication errors the last known state is kept.
 
-> The time calculation ("used time") is based on how long internet access was granted through this integration. The FRITZ!Box offers no API for the actual usage time per device – for a child's device this approximation is usually sufficient.
+> The time calculation ("used time") is based on the time a device **actively uses the connection** (the FRITZ!Box `NewActive` flag, i.e. traffic) while internet access is granted by this integration. Standby and the overnight hours after the 03:00 reset do not count against the budget. The FRITZ!Box offers no API for the exact usage time per device – for a child's device this approximation is usually sufficient.
 
 ## Requirements
 
