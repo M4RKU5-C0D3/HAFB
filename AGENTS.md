@@ -18,6 +18,7 @@ custom_components/fritzbox_budget/
   coordinator.py                   DataUpdateCoordinator + DeviceState + Budget-Logik
   sensor.py                        Restzeit-Sensor (Restore), Auto-Abschaltung
   switch.py                        Internet-Switch je Gerät
+  button.py                        Verlängerungs-Buttons (+15/+30/+60 min)
   services.yaml                    extend_time (15/30/60 min)
   manifest.json                    Domain, Version, Codeowner, requirement fritzconnection
   strings.json                     UI-Texte (EN, Fallback)

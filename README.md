@@ -10,7 +10,7 @@ Home Assistant Custom Integration **`fritzbox_budget`**: controls the internet a
 - Per device a **`switch`** (internet on/off) using the FRITZ!Box device lock (`X_AVM-DE_HostFilter`).
 - Per device a **`sensor`** showing the remaining time today (budget + extensions − used time).
 - **Daily budget** per device, reset daily at **03:00**.
-- **Extensions**: per device three momentary **`switch`es** for **+15 / +30 / +60 minutes**. If time remains, the shutdown is simply delayed; if the budget is exhausted, internet access is re-enabled and the remaining time is set to the granted minutes. The service `fritzbox_budget.extend_time` is available for automations.
+- **Extensions**: per device three **`button`s** for **+15 / +30 / +60 minutes**. If time remains, the shutdown is simply delayed; if the budget is exhausted, internet access is re-enabled and the remaining time is set to the granted minutes. The service `fritzbox_budget.extend_time` is available for automations.
 - **Automatic shutdown** once the budget is exhausted.
 - On connection or authentication errors the last known state is kept.
 
@@ -49,11 +49,11 @@ After adding the FRITZ!Box:
 
 ## Extensions
 
-**One tap:** each managed device provides three momentary switches that grant an extension immediately (they switch back to "off" on their own) – they are always available:
+**One tap:** each managed device provides three buttons that grant an extension immediately — they are always available:
 
-- `switch.<device>_verlaengerung_15_minuten`
-- `switch.<device>_verlaengerung_30_minuten`
-- `switch.<device>_verlaengerung_60_minuten`
+- `button.<device>_verlaengerung_15_minuten`
+- `button.<device>_verlaengerung_30_minuten`
+- `button.<device>_verlaengerung_60_minuten`
 
 **Via service:** grant a device extra time with `fritzbox_budget.extend_time`:
 

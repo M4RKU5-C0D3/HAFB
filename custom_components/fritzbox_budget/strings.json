@@ -62,7 +62,9 @@
     "switch": {
       "internet": {
         "name": "Internet"
-      },
+      }
+    },
+    "button": {
       "extend_15": {
         "name": "Extend 15 minutes"
       },
