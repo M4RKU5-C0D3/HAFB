@@ -62,6 +62,9 @@
     "switch": {
       "internet": {
         "name": "Internet"
+      },
+      "holiday_mode": {
+        "name": "Holiday mode"
       }
     },
     "button": {

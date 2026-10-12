@@ -14,7 +14,9 @@ from .api import FritzBoxClient, Host
 from .const import (
     CONF_BUDGET,
     CONF_DEVICES,
+    CONF_HOLIDAY_MODE,
     DEFAULT_BUDGET,
+    DEFAULT_HOLIDAY_MODE,
     DOMAIN,
     RESET_HOUR,
 )
@@ -68,6 +70,9 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         self.client = client
         self.hosts: dict[str, Host] = {}
         self.data = {}
+        self.holiday_mode: bool = self.entry.options.get(
+            CONF_HOLIDAY_MODE, DEFAULT_HOLIDAY_MODE
+        )
 
     def _device_config(self, mac: str) -> int:
         """Return the configured daily budget for a device."""
@@ -101,6 +106,10 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
         self.hosts = {h.mac: h for h in hosts}
         configured = self.entry.options.get(CONF_DEVICES, {})
+
+        self.holiday_mode = self.entry.options.get(
+            CONF_HOLIDAY_MODE, self.holiday_mode
+        )
 
         for mac in configured:
             host = self.hosts.get(mac)
@@ -154,8 +163,9 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             self.hass.async_add_executor_job(self.client.set_wan_access, state.ip, False)
             state.lock_applied = True
 
-    @staticmethod
-    def _is_locked(state: DeviceState) -> bool:
+    def _is_locked(self, state: DeviceState) -> bool:
+        if self.holiday_mode:
+            return False
         return state.remaining <= 0
 
     async def async_turn_wan(self, mac: str, enabled: bool) -> None:
@@ -194,3 +204,10 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         state.lock_applied = False
         await self.async_request_refresh()
         return True
+
+    async def async_set_holiday_mode(self, enabled: bool) -> None:
+        """Enable or disable holiday mode and persist it in options."""
+        self.holiday_mode = enabled
+        options = dict(self.entry.options)
+        options[CONF_HOLIDAY_MODE] = enabled
+        self.hass.config_entries.async_update_entry(self.entry, options=options)

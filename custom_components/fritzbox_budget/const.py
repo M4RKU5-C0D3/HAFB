@@ -29,3 +29,6 @@ REASON_NOT_READY = "not_ready"
 # Minutes of the day at which the daily budget counters are reset.
 RESET_HOUR = 3
 RESET_MINUTE = 0
+
+CONF_HOLIDAY_MODE = "holiday_mode"
+DEFAULT_HOLIDAY_MODE = False
