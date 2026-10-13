@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/M4RKU5-C0D3/HAFB/issues",
   "loggers": ["fritzconnection"],
   "requirements": ["fritzconnection>=1.13.2"],
-  "version": "0.1.0"
+  "version": "1.0.0"
 }
