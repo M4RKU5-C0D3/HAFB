@@ -14,7 +14,6 @@ from .api import FritzBoxClient, Host
 from .const import (
     CONF_BUDGET,
     CONF_DEVICES,
-    CONF_HOLIDAY_MODE,
     DEFAULT_BUDGET,
     DEFAULT_HOLIDAY_MODE,
     DOMAIN,
@@ -70,9 +69,7 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         self.client = client
         self.hosts: dict[str, Host] = {}
         self.data = {}
-        self.holiday_mode: bool = self.entry.options.get(
-            CONF_HOLIDAY_MODE, DEFAULT_HOLIDAY_MODE
-        )
+        self.holiday_mode: bool = DEFAULT_HOLIDAY_MODE
 
     def _device_config(self, mac: str) -> int:
         """Return the configured daily budget for a device."""
@@ -106,10 +103,6 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
         self.hosts = {h.mac: h for h in hosts}
         configured = self.entry.options.get(CONF_DEVICES, {})
-
-        self.holiday_mode = self.entry.options.get(
-            CONF_HOLIDAY_MODE, self.holiday_mode
-        )
 
         for mac in configured:
             host = self.hosts.get(mac)
@@ -153,7 +146,7 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                 state.lock_applied = False
             return
 
-        if state.wan_access and state.online:
+        if not self.holiday_mode and state.wan_access and state.online:
             elapsed_minutes = (now - state.last_eval).total_seconds() / 60.0
             if elapsed_minutes > 0:
                 state.used_today += elapsed_minutes
@@ -206,8 +199,19 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         return True
 
     async def async_set_holiday_mode(self, enabled: bool) -> None:
-        """Enable or disable holiday mode and persist it in options."""
+        """Enable or disable holiday mode for all managed devices."""
+        if self.holiday_mode == enabled:
+            return
         self.holiday_mode = enabled
-        options = dict(self.entry.options)
-        options[CONF_HOLIDAY_MODE] = enabled
-        self.hass.config_entries.async_update_entry(self.entry, options=options)
+        if enabled:
+            await self._async_release_locks()
+        await self.async_request_refresh()
+
+    async def _async_release_locks(self) -> None:
+        """Re-enable internet access for devices locked by the budget."""
+        for state in self.data.values():
+            if state.lock_applied and state.ip:
+                await self.hass.async_add_executor_job(
+                    self.client.set_wan_access, state.ip, True
+                )
+                state.lock_applied = False

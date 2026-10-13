@@ -101,8 +101,11 @@ class FritzBoxHolidayModeSwitch(
         await self.coordinator.async_set_holiday_mode(False)
 
     async def async_added_to_hass(self) -> None:
-        """Restore previous state if available."""
+        """Restore the previous holiday mode state if available."""
         await super().async_added_to_hass()
         last_state = await self.async_get_last_state()
-        if last_state is not None:
+        if last_state is None:
+            return
+        if (last_state.state == "on") != self.coordinator.holiday_mode:
             await self.coordinator.async_set_holiday_mode(last_state.state == "on")
+        self.async_write_ha_state()
