@@ -12,6 +12,7 @@ Home Assistant Custom Integration **`fritzbox_budget`**: controls the internet a
 - **Daily budget** per device, reset daily at **03:00**.
 - **Extensions**: per device three **`button`s** for **+15 / +30 / +60 minutes**. If time remains, the shutdown is simply delayed; if the budget is exhausted, internet access is re-enabled and the remaining time is set to the granted minutes. The service `fritzbox_budget.extend_time` is available for automations.
 - **Automatic shutdown** once the budget is exhausted.
+- **Pause**: a global button blocks internet access for all managed devices and freezes the timer; pressing it again resumes. Triggerable from automations via `button.press`.
 - On connection or authentication errors the last known state is kept.
 
 > The time calculation ("used time") is based on the time a device **actively uses the connection** (the FRITZ!Box `NewActive` flag, i.e. traffic) while internet access is granted by this integration. Standby and the overnight hours after the 03:00 reset do not count against the budget. The FRITZ!Box offers no API for the exact usage time per device – for a child's device this approximation is usually sufficient.

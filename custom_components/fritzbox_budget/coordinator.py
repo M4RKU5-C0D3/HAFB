@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import FritzBoxClient, Host
@@ -70,6 +71,21 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         self.hosts: dict[str, Host] = {}
         self.data = {}
         self.holiday_mode: bool = DEFAULT_HOLIDAY_MODE
+        self.pause_mode: bool = False
+        self._pre_pause_access: dict[str, bool] = {}
+        self._pause_store: Store[dict] = Store(
+            hass, 1, f"{DOMAIN}.{entry.entry_id}.pause"
+        )
+
+    async def async_load_pause(self) -> None:
+        """Restore the pause state from the previous run."""
+        stored = await self._pause_store.async_load()
+        if not stored or not stored.get("paused"):
+            return
+        self.pause_mode = True
+        self._pre_pause_access = {
+            mac: bool(value) for mac, value in stored.get("access", {}).items()
+        }
 
     def _device_config(self, mac: str) -> int:
         """Return the configured daily budget for a device."""
@@ -118,6 +134,11 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                 state.wan_access = await self.hass.async_add_executor_job(
                     self.client.get_wan_access, state.ip
                 )
+                if self.pause_mode and state.wan_access:
+                    await self.hass.async_add_executor_job(
+                        self.client.set_wan_access, state.ip, False
+                    )
+                    state.wan_access = False
             else:
                 state.wan_access = None
 
@@ -140,10 +161,15 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             state.granted_extension = 0
             state.last_eval = now
             if was_locked and state.ip:
-                self.hass.async_add_executor_job(
-                    self.client.set_wan_access, state.ip, True
-                )
+                if not self.pause_mode:
+                    self.hass.async_add_executor_job(
+                        self.client.set_wan_access, state.ip, True
+                    )
                 state.lock_applied = False
+            return
+
+        if self.pause_mode:
+            state.last_eval = now
             return
 
         if not self.holiday_mode and state.wan_access and state.online:
@@ -164,6 +190,8 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
     async def async_turn_wan(self, mac: str, enabled: bool) -> None:
         """Turn WAN access on/off for a device, bypassing the budget lock."""
         state = self.data[mac]
+        if self.pause_mode and enabled:
+            return
         if not state.ip:
             return
         ok = await self.hass.async_add_executor_job(
@@ -190,7 +218,7 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             state.granted_extension = max(
                 0, minutes + state.used_today - state.budget
             )
-            if state.ip:
+            if state.ip and not self.pause_mode:
                 await self.hass.async_add_executor_job(
                     self.client.set_wan_access, state.ip, True
                 )
@@ -209,9 +237,52 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
 
     async def _async_release_locks(self) -> None:
         """Re-enable internet access for devices locked by the budget."""
+        if self.pause_mode:
+            return
         for state in self.data.values():
             if state.lock_applied and state.ip:
                 await self.hass.async_add_executor_job(
                     self.client.set_wan_access, state.ip, True
                 )
                 state.lock_applied = False
+
+    async def async_toggle_pause(self) -> None:
+        """Toggle the global pause mode."""
+        await self.async_set_pause(not self.pause_mode)
+
+    async def async_set_pause(self, enabled: bool) -> None:
+        """Pause or resume all managed devices.
+
+        While paused, internet access is blocked and the used-time counter is
+        frozen. On resume, access is restored for devices that were online
+        before the pause started.
+        """
+        if self.pause_mode == enabled:
+            return
+        self.pause_mode = enabled
+        if enabled:
+            self._pre_pause_access = {
+                mac: bool(state.wan_access) for mac, state in self.data.items()
+            }
+            for state in self.data.values():
+                if state.ip:
+                    await self.hass.async_add_executor_job(
+                        self.client.set_wan_access, state.ip, False
+                    )
+        else:
+            for mac, was_online in self._pre_pause_access.items():
+                state = self.data.get(mac)
+                if state and state.ip and was_online:
+                    await self.hass.async_add_executor_job(
+                        self.client.set_wan_access, state.ip, True
+                    )
+                    state.lock_applied = False
+        await self._pause_store.async_save(
+            {
+                "paused": enabled,
+                "access": self._pre_pause_access if enabled else {},
+            }
+        )
+        if not enabled:
+            self._pre_pause_access.clear()
+        await self.async_request_refresh()

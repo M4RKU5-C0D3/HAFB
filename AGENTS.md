@@ -24,7 +24,7 @@ custom_components/fritzbox_budget/
   coordinator.py      DataUpdateCoordinator + DeviceState + Budget-Logik
   sensor.py           Restzeit-Sensor (RestoreSensor, Persistenz via Attribute)
   switch.py           Internet-Switch je Gerät
-  button.py           Verlängerungs-Buttons +15/+30/+60 min
+  button.py           Verlängerungs-Buttons +15/+30/+60 min + globaler Pause-Toggle
   services.yaml       extend_time (device=MAC, minutes 15/30/60)
   manifest.json       Domain, Version, Codeowner, Requirement fritzconnection
   strings.json        UI-Texte (EN, Fallback) – muss zu translations/de.json passen
@@ -52,6 +52,8 @@ custom_components/fritzbox_budget/
 - Options-Flow speichert `entry.options[CONF_DEVICES] = {mac: {budget}}`; ein Update-Listener ruft `async_reload_entry` → `async_reload`. Der Options-Flow `init` benötigt einen geladenen Coordinator (`hass.data[DOMAIN][entry_id]`), sonst `abort(not_ready)`.
 - Config-Flow-UI fragt **kein** Port-Feld ab: Host, Username, Password, SSL. Der TR-064-Port wird aus der SSL-Wahl abgeleitet (`DEFAULT_HTTP_PORT`/`DEFAULT_HTTPS_PORT`).
 - Service `extend_time` (device=MAC in Großschreibung, minutes 15/30/60) wird global in `async_setup` registriert und sucht den passenden Coordinator über alle Entries.
+- **Ferienmodus** (`switch.py`, global je Entry): hebt die Budget-Sperre auf und friert `used_today` ein.
+- **Pause-Modus** (`coordinator.py` + `button.py`, global je Entry, Toggle-Button): blockiert Internet für alle Geräte und friert `used_today` ein. Zustand + vorherige Online-Geräte werden in einem `Store` persistiert; beim Fortsetzen werden nur Geräte wieder freigeschaltet, die vor der Pause online waren. Button-Attribut und Sensor-Attribut `paused` zeigen den Zustand.
 - Bei Verbindungs-/Auth-Fehlern gibt `_async_update_data` den letzten Datenstand zurück (kein `UpdateFailed`), damit Entitäten verfügbar bleiben. `switch.available` ist nur `True` wenn `wan_access is not None`.
 - `unique_id` des Config-Entry = Seriennummer (`DeviceInfo:1/GetInfo/NewSerialNumber`); Entry-Titel = `NewModelName`. Im Router müssen „Zugriff für Anwendungen" (TR-064) und ggf. UPnP aktiviert sein.
 

@@ -16,6 +16,7 @@ ATTR_USED_TODAY = "used_today"
 ATTR_BUDGET = "budget"
 ATTR_GRANTED_EXTENSION = "granted_extension"
 ATTR_DATE = "date"
+ATTR_PAUSED = "paused"
 
 
 async def async_setup_entry(
@@ -73,6 +74,7 @@ class BudgetRemainingSensor(
             ATTR_BUDGET: state.budget,
             ATTR_GRANTED_EXTENSION: state.granted_extension,
             ATTR_DATE: state.date,
+            ATTR_PAUSED: self.coordinator.pause_mode,
         }
 
     async def async_added_to_hass(self) -> None:

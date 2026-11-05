@@ -76,6 +76,9 @@
       },
       "extend_60": {
         "name": "Verlängerung 60 Minuten"
+      },
+      "pause_toggle": {
+        "name": "Pause"
       }
     },
     "sensor": {

@@ -76,6 +76,9 @@
       },
       "extend_60": {
         "name": "Extend 60 minutes"
+      },
+      "pause_toggle": {
+        "name": "Pause"
       }
     },
     "sensor": {

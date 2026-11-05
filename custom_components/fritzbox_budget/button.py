@@ -26,6 +26,7 @@ async def async_setup_entry(
         for mac in devices
         for minutes in EXTENSION_MINUTES
     ]
+    entities.append(PauseToggleButton(coordinator, entry.entry_id))
     async_add_entities(entities)
 
 
@@ -59,3 +60,30 @@ class ExtensionButton(CoordinatorEntity[FritzBoxBudgetCoordinator], ButtonEntity
 
     async def async_press(self) -> None:
         await self.coordinator.async_extend_time(self._mac, self._minutes)
+
+
+class PauseToggleButton(
+    CoordinatorEntity[FritzBoxBudgetCoordinator], ButtonEntity
+):
+    """Button toggling the global pause mode."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "pause_toggle"
+
+    def __init__(
+        self, coordinator: FritzBoxBudgetCoordinator, entry_id: str
+    ) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{entry_id}_pause_toggle"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry_id)},
+            name="FRITZ!Box Budget",
+            manufacturer="AVM",
+        )
+
+    @property
+    def extra_state_attributes(self) -> dict[str, bool]:
+        return {"paused": self.coordinator.pause_mode}
+
+    async def async_press(self) -> None:
+        await self.coordinator.async_toggle_pause()
