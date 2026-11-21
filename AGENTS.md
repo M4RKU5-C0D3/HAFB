@@ -25,6 +25,7 @@ custom_components/fritzbox_budget/
   sensor.py           Restzeit-Sensor (RestoreSensor, Persistenz via Attribute)
   switch.py           Internet-Switch je Gerät
   button.py           Verlängerungs-Buttons +15/+30/+60 min + globaler Pause-Toggle
+  time.py             „Internet bis"-Entity je Gerät (Restzeit bis Uhrzeit anpassen)
   services.yaml       extend_time (device=MAC, minutes 15/30/60)
   manifest.json       Domain, Version, Codeowner, Requirement fritzconnection
   strings.json        UI-Texte (EN, Fallback) – muss zu translations/de.json passen
@@ -47,8 +48,9 @@ custom_components/fritzbox_budget/
   - `DisallowWANAccessByIP(NewIPv4Address, NewDisallow)`
 - Geräte werden **per IP** (nicht MAC) gesteuert. Offline-Geräte ohne IP sind nicht steuerbar; ihr letzter Stand bleibt erhalten.
 - `used_today` zählt nur, solange `wan_access` ON (`granted`) **und** das Gerät laut `status` aktiv Datenverkehr hat; Standby/„Ungenutzte Verbindungen" und die Zeit von 03:00 bis zur ersten Nutzung laufen nicht ins Kontingent.
-- Zwei Töpfe je Gerät: **Budget** (`budget`) und **Verlängerungen** (`granted_extension`, wächst ohne Tages-Cap). Gesperrt wenn `used_today >= budget + granted_extension`. Verlängerung mit Restzeit: `granted_extension += minutes`; ohne Restzeit: Internet freischalten und `granted_extension = minutes + used_today - budget` (Restzeit exakt = gewählte Minuten).
-- **Zähler-Reset um 03:00 Uhr** (`RESET_HOUR`): vor 03:00 zählt die Zeit noch zum Vortag; gesperrte Geräte werden beim Reset automatisch freigeschaltet und `used_today`/`granted_extension` auf 0 gesetzt.
+- Drei Komponenten je Gerät: **Budget** (`budget`), **Verlängerungen** (`granted_extension`, wächst ohne Tages-Cap) und **manuelle Anpassung** (`manual_adjustment`, signiert). `allowance = budget + granted_extension + manual_adjustment`; gesperrt wenn `used_today >= allowance`. Verlängerung mit Restzeit: `granted_extension += minutes`; ohne Restzeit: Internet freischalten und `granted_extension = max(0, minutes + used_today - budget - manual_adjustment)` (Restzeit exakt = gewählte Minuten).
+- **„Internet bis"-Entity** (`time.py`, je Gerät): Setzen auf `HH:MM` passt die **Restzeit** an, sodass sie bis zu dieser Uhrzeit reicht: `remaining_target = max(0, heute HH:MM - now)`, `manual_adjustment = remaining_target + used_today - budget - granted_extension`, `target_time = HH:MM`. Vergangene Uhrzeit ⇒ Restzeit 0 ⇒ sofortige Sperre; bei vorher erschöpftem Budget wird entsperrt. Es zählt weiterhin nur aktive Nutzung (bei Offline-Zeiten endet es später). Steuerbar per `time.set_value`.
+- **Zähler-Reset um 03:00 Uhr** (`RESET_HOUR`): vor 03:00 zählt die Zeit noch zum Vortag; gesperrte Geräte werden beim Reset automatisch freigeschaltet und `used_today`/`granted_extension`/`manual_adjustment` auf 0 sowie `target_time` auf `None` gesetzt.
 - Options-Flow speichert `entry.options[CONF_DEVICES] = {mac: {budget}}`; ein Update-Listener ruft `async_reload_entry` → `async_reload`. Der Options-Flow `init` benötigt einen geladenen Coordinator (`hass.data[DOMAIN][entry_id]`), sonst `abort(not_ready)`.
 - Config-Flow-UI fragt **kein** Port-Feld ab: Host, Username, Password, SSL. Der TR-064-Port wird aus der SSL-Wahl abgeleitet (`DEFAULT_HTTP_PORT`/`DEFAULT_HTTPS_PORT`).
 - Service `extend_time` (device=MAC in Großschreibung, minutes 15/30/60) wird global in `async_setup` registriert und sucht den passenden Coordinator über alle Entries.

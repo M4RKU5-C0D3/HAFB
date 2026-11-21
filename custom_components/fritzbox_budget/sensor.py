@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import time as dt_time
+
 from homeassistant.components.sensor import RestoreSensor
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -15,6 +17,8 @@ from .coordinator import DeviceState, FritzBoxBudgetCoordinator
 ATTR_USED_TODAY = "used_today"
 ATTR_BUDGET = "budget"
 ATTR_GRANTED_EXTENSION = "granted_extension"
+ATTR_MANUAL_ADJUSTMENT = "manual_adjustment"
+ATTR_TARGET_TIME = "target_time"
 ATTR_DATE = "date"
 ATTR_PAUSED = "paused"
 
@@ -67,12 +71,18 @@ class BudgetRemainingSensor(
         return self._mac in self.coordinator.data
 
     @property
-    def extra_state_attributes(self) -> dict[str, int | float | str]:
+    def extra_state_attributes(
+        self,
+    ) -> dict[str, int | float | str | None]:
         state = self.device_state
         return {
             ATTR_USED_TODAY: round(state.used_today, 1),
             ATTR_BUDGET: state.budget,
             ATTR_GRANTED_EXTENSION: state.granted_extension,
+            ATTR_MANUAL_ADJUSTMENT: round(state.manual_adjustment, 1),
+            ATTR_TARGET_TIME: (
+                state.target_time.isoformat() if state.target_time else None
+            ),
             ATTR_DATE: state.date,
             ATTR_PAUSED: self.coordinator.pause_mode,
         }
@@ -90,6 +100,15 @@ class BudgetRemainingSensor(
         state.granted_extension = int(
             last_state.attributes.get(ATTR_GRANTED_EXTENSION, 0) or 0
         )
+        state.manual_adjustment = float(
+            last_state.attributes.get(ATTR_MANUAL_ADJUSTMENT, 0) or 0
+        )
+        target_time = last_state.attributes.get(ATTR_TARGET_TIME)
+        if target_time:
+            try:
+                state.target_time = dt_time.fromisoformat(str(target_time))
+            except ValueError:
+                state.target_time = None
         state.budget = int(last_state.attributes.get(ATTR_BUDGET, 120) or 120)
         if last_state.attributes.get(ATTR_DATE):
             state.date = str(last_state.attributes[ATTR_DATE])

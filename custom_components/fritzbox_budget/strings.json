@@ -85,6 +85,11 @@
       "remaining_time": {
         "name": "Remaining time today"
       }
+    },
+    "time": {
+      "until": {
+        "name": "Internet until"
+      }
     }
   }
 }

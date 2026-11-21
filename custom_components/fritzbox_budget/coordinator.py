@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -38,6 +38,8 @@ class DeviceState:
 
     budget: int = DEFAULT_BUDGET
     granted_extension: int = 0
+    manual_adjustment: float = 0.0
+    target_time: time | None = None
     used_today: float = 0.0
     date: str = field(
         default_factory=lambda: datetime.now().strftime("%Y-%m-%d")  # noqa: DTZ005
@@ -47,8 +49,8 @@ class DeviceState:
 
     @property
     def allowance(self) -> float:
-        """Total allowed minutes (budget + granted extensions)."""
-        return self.budget + self.granted_extension
+        """Total allowed minutes (budget + extensions + manual adjustment)."""
+        return self.budget + self.granted_extension + self.manual_adjustment
 
     @property
     def remaining(self) -> float:
@@ -159,6 +161,8 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             state.date = period_date
             state.used_today = 0.0
             state.granted_extension = 0
+            state.manual_adjustment = 0.0
+            state.target_time = None
             state.last_eval = now
             if was_locked and state.ip:
                 if not self.pause_mode:
@@ -178,9 +182,17 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
                 state.used_today += elapsed_minutes
         state.last_eval = now
 
-        if self._is_locked(state) and not state.lock_applied and state.ip:
-            self.hass.async_add_executor_job(self.client.set_wan_access, state.ip, False)
-            state.lock_applied = True
+        if self._is_locked(state):
+            if not state.lock_applied and state.ip:
+                self.hass.async_add_executor_job(
+                    self.client.set_wan_access, state.ip, False
+                )
+                state.lock_applied = True
+        elif state.lock_applied and state.ip:
+            self.hass.async_add_executor_job(
+                self.client.set_wan_access, state.ip, True
+            )
+            state.lock_applied = False
 
     def _is_locked(self, state: DeviceState) -> bool:
         if self.holiday_mode:
@@ -216,7 +228,11 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
             state.granted_extension += minutes
         else:
             state.granted_extension = max(
-                0, minutes + state.used_today - state.budget
+                0,
+                minutes
+                + state.used_today
+                - state.budget
+                - state.manual_adjustment,
             )
             if state.ip and not self.pause_mode:
                 await self.hass.async_add_executor_job(
@@ -225,6 +241,40 @@ class FritzBoxBudgetCoordinator(DataUpdateCoordinator[dict[str, DeviceState]]):
         state.lock_applied = False
         await self.async_request_refresh()
         return True
+
+    async def async_set_until(self, mac: str, target: time) -> None:
+        """Adjust the remaining time so it lasts until the given clock time.
+
+        The adjustment is applied to the remaining active minutes, not to the
+        wall clock: if the device is offline, the end shifts accordingly. A
+        target time that already passed locks the device immediately.
+        """
+        state = self.data.get(mac)
+        if state is None:
+            return
+        target = target.replace(tzinfo=None)
+        now = datetime.now()  # noqa: DTZ005
+        target_dt = datetime.combine(now.date(), target)
+        remaining_target = max(0.0, (target_dt - now).total_seconds() / 60.0)
+        was_exhausted = state.remaining <= 0
+        state.target_time = target
+        state.manual_adjustment = (
+            remaining_target
+            + state.used_today
+            - state.budget
+            - state.granted_extension
+        )
+        if (
+            remaining_target > 0
+            and was_exhausted
+            and state.ip
+            and not self.pause_mode
+        ):
+            await self.hass.async_add_executor_job(
+                self.client.set_wan_access, state.ip, True
+            )
+            state.lock_applied = False
+        await self.async_request_refresh()
 
     async def async_set_holiday_mode(self, enabled: bool) -> None:
         """Enable or disable holiday mode for all managed devices."""

@@ -8,9 +8,10 @@ Home Assistant Custom Integration **`fritzbox_budget`**: controls the internet a
 
 - **Managed devices** are selected via the options flow.
 - Per device a **`switch`** (internet on/off) using the FRITZ!Box device lock (`X_AVM-DE_HostFilter`).
-- Per device a **`sensor`** showing the remaining time today (budget + extensions − used time).
+- Per device a **`sensor`** showing the remaining time today (budget + extensions + manual adjustment − used time).
 - **Daily budget** per device, reset daily at **03:00**.
 - **Extensions**: per device three **`button`s** for **+15 / +30 / +60 minutes**. If time remains, the shutdown is simply delayed; if the budget is exhausted, internet access is re-enabled and the remaining time is set to the granted minutes. The service `fritzbox_budget.extend_time` is available for automations.
+- **Internet until**: per device a **`time`** entity that adjusts the remaining time so it lasts until a selected clock time (extend or shorten). A clock time that already passed locks the device immediately. Automatable via `time.set_value`.
 - **Automatic shutdown** once the budget is exhausted.
 - **Pause**: a global button blocks internet access for all managed devices and freezes the timer; pressing it again resumes. Triggerable from automations via `button.press`.
 - On connection or authentication errors the last known state is kept.
@@ -66,6 +67,20 @@ data:
 ```
 
 Behavior: if the budget is not yet exhausted, the granted minutes extend the remaining time (delaying the shutdown). If the device was already locked by the budget, internet access is re-enabled and the remaining time is set to the granted minutes. Extensions reset daily together with the budget at 03:00.
+
+## Internet until a clock time
+
+Each managed device provides a `time` entity (`time.<device>_internet_bis` with a German UI, `time.<device>_internet_until` with an English UI). Setting it adjusts the remaining active minutes so that the budget lasts until that clock time – useful to shorten screen time or to extend it. A clock time that already passed locks the device immediately. From automations use the `time.set_value` action:
+
+```yaml
+action: time.set_value
+target:
+  entity_id: time.violet_internet_bis
+data:
+  time: "20:00:00"
+```
+
+Only active usage counts, so if the device is offline during that period the end shifts later. The adjustment is reset together with the daily budget at 03:00.
 
 ## Notification before shutdown
 
